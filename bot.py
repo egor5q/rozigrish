@@ -66,12 +66,28 @@ def create_tg_channel(channel):
     }
         
     
-    
+  
+
+@bot.message_handler(commands=['add_event'])
+def add_event(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        cont = channels.find_one({'name':user['c_container']})
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages':createmessage()}})
+        
+
+
 
 @bot.message_handler(commands=['current_container_info'])
 def cinfo(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
         cont = channels.find_one({'name':user['c_container']})
         if cont != None:
             fchat = None
@@ -104,6 +120,9 @@ def addd(m):
 def set_namee(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
         x = m.text.split(' ')
         if len(x)>1:
             nextt = False
@@ -126,6 +145,16 @@ def set_namee(m):
 def setfirst(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        x = m.text.split(' ')
+        if len(x) > 1:
+            if x[1].lower() == 'none':
+                channels.update_one({'name':user['c_container']},{'$set':{'first':None}})
+                bot.send_message(m.chat.id, 'Успешно отменён канал!')
+                users.update_one({'id':user['id']},{'$set':{'c_channel':None}})
+                return
         users.update_one({'id':user['id']},{'$set':{'c_channel':'first'}})
         bot.send_message(m.chat.id, 'Теперь пришлите мне форвард с первого канала (на котором будет пост с кнопкой), к которому хотите привязать меня.')
         
@@ -134,6 +163,16 @@ def setfirst(m):
 def setsecond(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        x = m.text.split(' ')
+        if len(x) > 1:
+            if x[1].lower() == 'none':
+                channels.update_one({'name':user['c_container']},{'$set':{'second':None}})
+                bot.send_message(m.chat.id, 'Успешно отменён канал!')
+                users.update_one({'id':user['id']},{'$set':{'c_channel':None}})
+                return
         users.update_one({'id':user['id']},{'$set':{'c_channel':'second'}})
         bot.send_message(m.chat.id, 'Теперь пришлите мне форвард со второго канала (на который нужно подписаться для участия), к которому хотите привязать меня.')
         
@@ -163,6 +202,7 @@ def forwards(m):
                         bot.send_message(m.chat.id, 'Перешлите сообщение из канала, а не из чата!')
                 except:
                     bot.send_message(m.chat.id, 'Для начала нужно сделать меня администратором канала!')
+                    
 
     
 @bot.callback_query_handler(func=lambda call:True)
