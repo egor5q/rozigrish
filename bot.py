@@ -115,7 +115,7 @@ def set_namee(m):
                 bot.send_message(m.chat.id, 'Контейнер с таким именем уже существует!')
         else:
             bot.send_message(m.chat.id, 'Для установки своего названия введите `/set\_name имя`, где имя - название контейнера;\n'+
-                            'Ваш текущий контейнер: '+str(user['c_container']))+'.')
+                            'Ваш текущий контейнер: '+str(user['c_container'])+'.', parse_mode="markdown")
             
             
 @bot.message_handler(commands=['set_first'])
