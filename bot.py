@@ -84,6 +84,7 @@ def cinfo(m):
             text += 'Текущий контейнер: `'+user['c_container']+'`;\n'
             text += 'Первый чат (в котором будет кнопка): '+str(fchat)+';\n'
             text += 'Второй чат (на который надо подписаться): '+str(schat)+'.\n'
+            bot.send_message(m.chat.id, text, parse_mode="markdown")
     
 
 @bot.message_handler(commands=['add'])
