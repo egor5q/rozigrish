@@ -19,7 +19,7 @@ users=db.users
 channels = db.channels
 
 test_channel = -1001435448112
-admins = [441399484]
+admins = [441399484, 864442319]
 
 
 def randomgen():
