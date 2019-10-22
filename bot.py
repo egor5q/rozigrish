@@ -104,6 +104,32 @@ def createmessage():
 
   
 
+@bot.message_handler(commands=['post_event'])
+def post_event(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        
+        cont = channels.find_one({'name':user['c_container']})
+        event = cont['current_messages'][user['c_event']]
+        if cont['first'] == None:
+            bot.send_message(m.chat.id, 'Для начала выставьте первый чат, в который будет отправлена кнопка!')
+            return
+        kb = types.InlineKeyboardMarkup()
+        kd.add(types.InlineKeyboardButton(text = str(event['button_text']), callback_data = 'click '+cont['name']+' '+event['id']))
+        msg = bot.send_message(cont['first'], str(event['msg_text']), reply_markup = kb)
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+event['id']+'.msg_id':msg.message_id}})
+        bot.send_message(m.chat.id, 'Успешно запущено событие!')
+        
+    
+    
 @bot.message_handler(commands=['select_container'])
 def select_containerr(m):
     user = createuser(m.from_user)
@@ -117,7 +143,9 @@ def select_containerr(m):
                                  '/select_container.')
             else:
                 users.update_one({'id':user['id']},{'$set':{'c_container':name}})
+                users.update_one({'id':user['id']},{'$set':{'c_event':None}})
                 bot.send_message(m.chat.id, 'Успешно изменён текущий контейнер!')
+                
         else:
             text = 'Список контейнеров:\n'
             for ids in channels.find({}):
@@ -177,7 +205,7 @@ def nameevent(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
         if user['c_event'] == None:
-            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
         x = m.text.split(' ')
         if len(x)>1:
@@ -201,7 +229,7 @@ def nameevent(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
         if user['c_event'] == None:
-            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
         x = m.text.split(' ')
         if len(x)>1:
@@ -217,7 +245,7 @@ def nameevent(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
         if user['c_event'] == None:
-            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
         x = m.text.split(' ')
         if len(x)>1:
@@ -234,7 +262,7 @@ def nameevent(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
         if user['c_event'] == None:
-            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
         x = m.text.split(' ')
         if len(x)>1:
@@ -288,6 +316,7 @@ def cinfo(m):
             text += 'Текст сообщения: '+str(msg['msg_text']).replace('*', '\*').replace('`', '\`').replace('_', '\_')+'\n'
             text += 'Текст кнопки: '+str(msg['button_text'])+'\n'
             text += 'Максимум участников: '+str(msg['max_users'])+'\n'
+            text += 'Нажало кнопку: '+str(len(msg['clicked_users']))+'\n'
             bot.send_message(m.chat.id, text, parse_mode="markdown")
     
 
@@ -395,12 +424,28 @@ def forwards(m):
     
 @bot.callback_query_handler(func=lambda call:True)
 def inline(call): 
-    if call.data == 'test':
-            user = bot.get_chat_member(test_channel, call.from_user.id)
-            if user.status != 'left':
-                bot.send_message(test_channel, 'Юзер '+call.from_user.first_name+' нажал и подписался!')
+    if 'click' in call.data:
+        eid = call.data.split(' ')[2]
+        cont = channels.find_one({'name':call.data.split(' ')[1]})
+        event = cont['current_messages'][eid]
+        if call.from_user.id not in event['clicked_users']:
+            if cont['second'] != None:
+                x = bot.get_chat_member(cont['second']['id'], call.from_user.id)
+                if x.status != 'left':
+                    channels.update_one({'name':cont['name']},{'$push':{'current_messages.'+eid+'.clicked_users':call.from_user.id}})
+                    bot.answer_callback_query(call.id, 'Вы успешно записались на розыгрыш!')
+                    medit(event['msg_text']+' ('+str(len(event['clicked_users'])+1)+' записано).', call.message.chat.id, call.message.message_id) 
+                else:
+                    bot.answer_callback_query(call.id, 'Не выполнено условие (подписка на канал)!')
             else:
-                bot.send_message(test_channel, 'Юзер '+call.from_user.first_name+' нажал, но не подписался!')
+                channels.update_one({'name':cont['name']},{'$push':{'current_messages.'+eid+'.clicked_users':call.from_user.id}})
+                bot.answer_callback_query(call.id, 'Вы успешно записались на розыгрыш!')
+                medit(event['msg_text']+' ('+str(len(event['clicked_users'])+1)+' записано).', call.message.chat.id, call.message.message_id) 
+        else:
+            bot.answer_callback_query(call.id, 'Вы уже записаны на розыгрыш!')
+        
+                
+        
 
 
 
