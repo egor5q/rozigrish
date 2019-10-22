@@ -119,7 +119,7 @@ def select_containerr(m):
             text = 'Список контейнеров:\n'
             for ids in channels.find({}):
                 text += '`'+ids['name']+'`\n'
-                text+='\nДля выбора контейнера введите:\n/select\_container имя\nГде имя - имя контейнера.' 
+            text+='\nДля выбора контейнера введите:\n/select\_container имя\nГде имя - имя контейнера.' 
             bot.send_message(m.chat.id, text, parse_mode = 'markdown')
             
             
@@ -142,12 +142,11 @@ def select_event(m):
                 users.update_one({'id':user['id']},{'$set':{'c_event':name}})
                 bot.send_message(m.chat.id, 'Успешно изменено текущее событие!')
         else:
-            text = ''
+            text = 'Список событий:\n'
             for ids in channels.find_one({'name':user['c_container']})['current_messages']:
-                text = 'Список событий:\n'
                 text += '`'+ids['id']+'` (имя события: "'+ids['name']+'")\n'
-                text+='\nДля выбора события введите:\n/select_event id\nГде id - айди события.' 
-            bot.send_message(m.chat.id, text)
+            text+='\nДля выбора события введите:\n/select\_event id\nГде id - айди события.' 
+            bot.send_message(m.chat.id, text, parse_mode = 'markdown')
             
     
 @bot.message_handler(commands=['add_event'])
