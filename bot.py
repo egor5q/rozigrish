@@ -58,7 +58,31 @@ def createuser(user):
     return x
     
 
+def create_tg_channel(channel):
+    return {
+        'id':channel.id,
+        'title':channel.title,
+        'username':channel.username
+    }
+        
+    
+    
 
+@bot.message_handler(commands=['current_container_info'])
+def cinfo(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        fchat = None
+        if user['first'] != None:
+            fchat = user['first']['title']
+        schat = None
+        if user['second'] != None:
+            schat = user['second']['title']
+        text=''
+        text += 'Текущий контейнер: `'+user['c_container']+'`;\n'
+        text += 'Первый чат (в котором будет кнопка): '+fchat+';\n'
+        text += 'Второй чат (на который надо подписаться): '+schat+'.\n'
+    
 
 @bot.message_handler(commands=['add'])
 def addd(m):
@@ -98,22 +122,43 @@ def set_namee(m):
 def setfirst(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
-        users.update_one({'id':user['id']},{'$set':{'c_channel':1}})
+        users.update_one({'id':user['id']},{'$set':{'c_channel':'first'}})
         bot.send_message(m.chat.id, 'Теперь пришлите мне форвард с первого канала (на котором будет пост с кнопкой), к которому хотите привязать меня.')
         
         
+@bot.message_handler(commands=['set_second'])
+def setsecond(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        users.update_one({'id':user['id']},{'$set':{'c_channel':'second'}})
+        bot.send_message(m.chat.id, 'Теперь пришлите мне форвард со второго канала (на который нужно подписаться для участия), к которому хотите привязать меня.')
         
         
-    
-
-    
-    
 
 @bot.message_handler(commands=['tests'])
 def tstst(m):
     kb=types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(text='a', callback_data='test'))   
     bot.send_message(-1001395267877, 'beee!', reply_markup=kb)
+    
+    
+    
+@bot.message_handler(content_types=['text'])
+def forwards(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if m.forwarded_from != None and m.chat.id == m.from_user.id:
+            if user['c_channel'] != None:
+                try:
+                    chat = bot.get_chat(m.forward_from_chat.id)
+                    if chat.type == 'channel':
+                        channels.update_one({'name':user['c_container']},{'$set':{user['c_channel']:create_tg_channel(m.forward_from_chat)}})
+                        users.update_one({'id':user['id']},{'$set':{'c_channel':None}})
+                        bot.send_message(m.chat.id, 'Успешно! Канал привязан к контейнеру!')
+                    else:
+                        bot.send_message(m.chat.id, 'Перешлите сообщение из канала, а не из чата!')
+                except:
+                    bot.send_message(m.chat.id, 'Для начала нужно сделать меня администратором канала!')
 
     
 @bot.callback_query_handler(func=lambda call:True)
