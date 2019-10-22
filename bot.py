@@ -159,6 +159,8 @@ def add_event(m):
             return
         cont = channels.find_one({'name':user['c_container']})
         x = createmessage()
+        for ids in x:
+            x=ids
         channels.update_one({'name':cont['name']},{'$set':{'current_messages':x}})
         users.update_one({'id':user['id']},{'$set':{'c_event':x['id']}})
         bot.send_message(m.chat.id, 'Успешно создано событие! Его имя: '+x['name']+'. Теперь настройте его:\n'+
