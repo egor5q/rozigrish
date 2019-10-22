@@ -116,12 +116,11 @@ def select_containerr(m):
                 users.update_one({'id':user['id']},{'$set':{'c_container':name}})
                 bot.send_message(m.chat.id, 'Успешно изменён текущий контейнер!')
         else:
-            text = ''
+            text = 'Список контейнеров:\n'
             for ids in channels.find({}):
-                text = 'Список контейнеров:\n'
                 text += '`'+ids['name']+'`\n'
-                text+='\nДля выбора контейнера введите:\n/select_container имя\nГде имя - имя контейнера.' 
-            bot.send_message(m.chat.id, text)
+                text+='\nДля выбора контейнера введите:\n/select\_container имя\nГде имя - имя контейнера.' 
+            bot.send_message(m.chat.id, text, parse_mode = 'markdown')
             
             
 @bot.message_handler(commands=['select_event'])
