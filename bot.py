@@ -77,9 +77,7 @@ def randomid():
         print(ids)
         for idss in ids['current_messages']:
             print(idss)
-            for idsss in ids['current_messages'][idss]:
-                print(idsss)
-                alls.append(ids['current_messages'][idss][idsss]['id'])
+                alls.append(ids['current_messages'][idss]['id'])
             
     text=''
     while len(text)<5:
@@ -164,10 +162,10 @@ def add_event(m):
         cont = channels.find_one({'name':user['c_container']})
         x = createmessage()
         for ids in x:
-            x=ids
-        channels.update_one({'name':cont['name']},{'$set':{'current_messages':x}})
-        users.update_one({'id':user['id']},{'$set':{'c_event':x['id']}})
-        bot.send_message(m.chat.id, 'Успешно создано событие! Его имя: '+x['name']+'. Теперь настройте его:\n'+
+            y=ids
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+y:x}})
+        users.update_one({'id':user['id']},{'$set':{'c_event':y['id']}})
+        bot.send_message(m.chat.id, 'Успешно создано событие! Его имя: '+y['name']+'. Теперь настройте его:\n'+
                          '/set_e_name - имя события;\n'+
                          '/set_e_text - текст сообщения с розыгрышем;\n'+
                          '/set_e_button - текст кнопки с розыгрышем;\n'+
