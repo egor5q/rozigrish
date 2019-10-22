@@ -151,7 +151,7 @@ def tstst(m):
 def forwards(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
-        if m.forward_from != None and m.chat.id == m.from_user.id:
+        if m.forward_from_chat != None and m.chat.id == m.from_user.id:
             if user['c_channel'] != None:
                 try:
                     chat = bot.get_chat(m.forward_from_chat.id)
