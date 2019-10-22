@@ -87,14 +87,17 @@ def randomid():
     
 
 def createmessage():
-    return {
+    id=randomid()
+    return {id:{
+        'id':id,
         'kb':None,
         'msg_text':None,
         'button_text':None,
         'msg_id':None,
         'max_users':None,
-        'id':randomid()
-    }
+        'name':id,
+        'clicked_users':[]
+    }}
 
   
 
@@ -106,14 +109,95 @@ def add_event(m):
             bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
             return
         cont = channels.find_one({'name':user['c_container']})
-        channels.update_one({'name':cont['name']},{'$set':{'current_messages':createmessage()}})
-        bot.send_message(m.chat.id, 'Успешно создано событие! Теперь настройте его:\n'+
+        x = createmessage()
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages':x}})
+        users.update_one({'id':user['id']},{'$set':{'c_event':x['id']}})
+        bot.send_message(m.chat.id, 'Успешно создано событие! Его имя: '+x['name']+'. Теперь настройте его:\n'+
+                         '/set_e_name - имя события;\n'+
                          '/set_e_text - текст сообщения с розыгрышем;\n'+
                          '/set_e_button - текст кнопки с розыгрышем;\n'+
                          '/set_e_max_users - максимальное число участников розыгрыша.\n')
         
 
-
+@bot.message_handler(commands=['set_e_name'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            alls=[]
+            name = x[1]
+            for ids in channels.find({}):
+                for idss in ids['current_messages']:
+                    alls.append(ids['current_messages'][idss]['name'])
+            if name not in alls:
+                channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.name':name}})
+                bot.send_message(m.chat.id, 'Вы успешно сменили имя события на "'+name+'"!')
+            else:
+                bot.send_message(m.chat.id, 'Событие с таким именем уже существует!')
+        else:
+            bot.send_message(m.chat.id, 'Для изменения имени события используйте формат:\n/set_e_name имя\nГде имя - имя события.')
+            
+            
+            
+@bot.message_handler(commands=['set_e_text'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            text = x[1]
+            event = channels.find_one({'name':user['c_container']})['current_messages'][user['c_event']]['name']
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.msg_text':text}})
+            bot.send_message(m.chat.id, 'Успешно изменён текст сообщения события "'+event+'"!')
+        else:
+            bot.send_message(m.chat.id, 'Для изменения текста сообщения события используйте формат:\n/set_e_text текст\nГде текст - текст события.')
+        
+@bot.message_handler(commands=['set_e_button'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            text = x[1]
+            event = channels.find_one({'name':user['c_container']})['current_messages'][user['c_event']]['name']
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.button_text':text}})
+            bot.send_message(m.chat.id, 'Успешно изменён текст кнопки события "'+event+'"!')
+        else:
+            bot.send_message(m.chat.id, 'Для изменения текста сообщения события используйте формат:\n/set_e_text текст\nГде текст - текст события.')
+        
+        
+@bot.message_handler(commands=['set_e_max_users'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            try:
+                text = int(x[1])
+            except:
+                bot.send_message(m.chat.id, 'Для изменения максимального количества участников события используйте формат:\n/set_e_max_users число\nГде число - максимальное число юзеров.')
+                return
+            event = channels.find_one({'name':user['c_container']})['current_messages'][user['c_event']]['name']
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.max_users':text}})
+            bot.send_message(m.chat.id, 'Успешно изменено максимальное количество юзеров события "'+event+'"!')
+        else:
+            bot.send_message(m.chat.id, 'Для изменения максимального количества участников события используйте формат:\n/set_e_max_users число\nГде число - максимальное число юзеров.')
+        
+        
+        
 
 @bot.message_handler(commands=['current_container_info'])
 def cinfo(m):
