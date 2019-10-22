@@ -272,6 +272,23 @@ def cinfo(m):
             text += 'Первый чат (в котором будет кнопка): '+str(fchat)+';\n'
             text += 'Второй чат (на который надо подписаться): '+str(schat)+'.\n'
             bot.send_message(m.chat.id, text, parse_mode="markdown")
+            
+@bot.message_handler(commands=['current_event_info'])
+def cinfo(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        cont = channels.find_one({'name':user['c_container']})
+        msg = cont['current_messages'][user['c_event']]
+        if cont != None:
+            text = 'Информация о текущем событии:\n\n'
+            text += 'id: `'+msg['id']+'`\n'
+            text += 'Текст сообщения: '+str(msg['msg_text']).replace('*', '\*').replace('`', '\`').replace('_', '\_')+'\n'
+            text += 'Текст кнопки: '+str(msg['button_text'])+'\n'
+            text += 'Максимум участников: '+str(msg['max_users'])+'\n'
+            bot.send_message(m.chat.id, text, parse_mode="markdown")
     
 
 @bot.message_handler(commands=['add'])
