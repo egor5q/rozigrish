@@ -124,7 +124,7 @@ def post_event(m):
             return
         kb = types.InlineKeyboardMarkup()
         kb.add(types.InlineKeyboardButton(text = str(event['button_text']), callback_data = 'click '+cont['name']+' '+event['id']))
-        msg = bot.send_message(cont['first'], str(event['msg_text']), reply_markup = kb)
+        msg = bot.send_message(cont['first']['id'], str(event['msg_text']), reply_markup = kb)
         channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+event['id']+'.msg_id':msg.message_id}})
         bot.send_message(m.chat.id, 'Успешно запущено событие!')
         
