@@ -163,7 +163,7 @@ def add_event(m):
         x = createmessage()
         for ids in x:
             y=ids
-        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+y:x}})
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+y:x[y]}})
         users.update_one({'id':user['id']},{'$set':{'c_event':y['id']}})
         bot.send_message(m.chat.id, 'Успешно создано событие! Его имя: '+y['name']+'. Теперь настройте его:\n'+
                          '/set_e_name - имя события;\n'+
