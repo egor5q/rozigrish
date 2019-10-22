@@ -101,6 +101,53 @@ def createmessage():
 
   
 
+@bot.message_handler(commands=['select_container'])
+def select_containerr(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        x = m.text.split(' ')
+        if len(x)>1:
+            name = x[1]
+            cont = channels.find_one({'name':name})
+            if cont == None:
+                bot.send_message(m.chat.id, 'Контейнера с таким именем не существует! Для просмотра всех контейнеров нажмите '+
+                                 '/select_container.')
+            else:
+                users.update_one({'id':user['id']},{'$set':{'c_container':name}})
+                bot.send_message(m.chat.id, 'Успешно изменён текущий контейнер!')
+        else:
+            text = ''
+            for ids in channels.find({}):
+                text = 'Список контейнеров:\n'
+                text += '`'+ids['name']+'`\n'
+                text+='\nДля выбора контейнера введите:\n/select_container имя\nГде имя - имя контейнера.' 
+            bot.send_message(m.chat.id, text)
+            
+            
+@bot.message_handler(commands=['select_event'])
+def select_event(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        x = m.text.split(' ')
+        if len(x)>1:
+            name = x[1]
+            cont = channels.find_one({'name':user['c_container']})
+            
+            if name not in cont['current_messages']:
+                bot.send_message(m.chat.id, 'События с таким айди не существует! Нажмите /select_event для просмотра всех событий.')
+            
+            else:
+                users.update_one({'id':user['id']},{'$set':{'c_event':name}})
+                bot.send_message(m.chat.id, 'Успешно изменено текущее событие!')
+        else:
+            text = ''
+            for ids in channels.find_one({'name':user['c_container']})['current_messages']:
+                text = 'Список событий:\n'
+                text += '`'+ids['id']+'` (имя события: "'+ids['name']+'")\n'
+                text+='\nДля выбора события введите:\n/select_event id\nГде id - айди события.' 
+            bot.send_message(m.chat.id, text)
+            
+    
 @bot.message_handler(commands=['add_event'])
 def add_event(m):
     user = createuser(m.from_user)
