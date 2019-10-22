@@ -14,10 +14,100 @@ bot = telebot.TeleBot(token)
 
 
 client=MongoClient(os.environ['database'])
-db=client.
+db=client.base1
 users=db.users
+channels = db.channels
 
 test_channel = -1001435448112
+admins = [441399484]
+
+
+def randomgen():
+    alls = []
+    symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    for ids in channels.find({}):
+        alls.append(ids['name'])
+    text=''
+    while len(text)<5:
+        text+=random.choice(symbols)
+    while text in alls:
+        text=''
+        while len(text)<5:
+            text+=random.choice(symbols)
+    return text
+
+def createchannel():
+    return {
+        'name':randomgen(),
+        'first':None,
+        'second':None,
+        'current_messages':{}
+    }
+
+def createuser(user):
+    x = users.find_one({'id':user.id})
+    if x == None:
+        users.insert_one({
+            'id':user.id,
+            'name':user.first_name,
+            'username':user.username,
+            'c_container':None,
+            'c_channel':None
+        })
+        x = users.find_one({'id':user.id})
+    return x
+    
+
+
+
+@bot.message_handler(commands=['add'])
+def addd(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        ch = createchannel()
+        channels.insert_one(ch)
+        users.update_one({'id':user['id']},{'$set':{'c_container':ch['name']}})
+        bot.send_message(m.chat.id, 'Я создал новый контейнер! Его название - `'+ch['name']+'`. Теперь настройте его:\n'+
+                         'Для установки своего названия введите `/set\_name имя`, где имя - название контейнера;\n'
+                         'Для установки первого канала введите `/set\_first`;\n'+
+                         'Для установки второго канала введите `/set\_second`, или оставьте пустым, если условия (подписки на второй канал) нет.\n',
+                        parse_mode="markdown")
+        
+@bot.message_handler(commands=['set_name'])
+def set_namee(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        x = m.text.split(' ')
+        if len(x)>1:
+            nextt = False
+            name = x[1]
+            alls = []
+            for ids in channels.find({}):
+                alls.append(ids['name'])
+            if name not in alls:
+                channels.update_one({'name':user['c_container']},{'$set':{'name':name}})
+                bot.send_message(m.chat.id, 'Имя контейнера успешно изменено!')
+            else:
+                bot.send_message(m.chat.id, 'Контейнер с таким именем уже существует!')
+        else:
+            bot.send_message(m.chat.id, 'Для установки своего названия введите `/set\_name имя`, где имя - название контейнера;\n'+
+                            'Ваш текущий контейнер: '+str(user['c_container']))+'.')
+            
+            
+@bot.message_handler(commands=['set_first'])
+def setfirst(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        users.update_one({'id':user['id']},{'$set':{'c_channel':1}})
+        bot.send_message(m.chat.id, 'Теперь пришлите мне форвард с первого канала (на котором будет пост с кнопкой), к которому хотите привязать меня.')
+        
+        
+        
+        
+    
+
+    
+    
 
 @bot.message_handler(commands=['tests'])
 def tstst(m):
