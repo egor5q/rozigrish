@@ -434,7 +434,10 @@ def inline(call):
                 if x.status != 'left':
                     channels.update_one({'name':cont['name']},{'$push':{'current_messages.'+eid+'.clicked_users':call.from_user.id}})
                     bot.answer_callback_query(call.id, 'Вы успешно записались на розыгрыш!')
-                    medit(event['msg_text']+' ('+str(len(event['clicked_users'])+1)+' записано).', call.message.chat.id, call.message.message_id) 
+                    kb = types.InlineKeyboardMarkup()
+                    kb.add(types.InlineKeyboardButton(text = str(event['button_text'])+' ('+str(len(event['clicked_users'])+1)+' записано).', callback_data = 'click '+cont['name']+' '+event['id']))
+       
+                    medit(event['msg_text'], call.message.chat.id, call.message.message_id, reply_markup=kb) 
                 else:
                     bot.answer_callback_query(call.id, 'Не выполнено условие (подписка на канал)!')
             else:
