@@ -112,6 +112,7 @@ def set_namee(m):
                 alls.append(ids['name'])
             if name not in alls:
                 channels.update_one({'name':user['c_container']},{'$set':{'name':name}})
+                users.update_one({'id':user['id']},{'$set':{'c_container':name}})
                 bot.send_message(m.chat.id, 'Имя контейнера успешно изменено!')
             else:
                 bot.send_message(m.chat.id, 'Контейнер с таким именем уже существует!')
