@@ -53,7 +53,8 @@ def createuser(user):
             'username':user.username,
             'c_container':None,
             'c_channel':None,
-            'c_event':None
+            'c_event':None,
+            'c_option':None
         })
         x = users.find_one({'id':user.id})
     return x
@@ -91,6 +92,7 @@ def createmessage():
         'msg_text':None,
         'button_text':None,
         'msg_id':None,
+        'max_users':None,
         'id':randomid()
     }
 
@@ -105,6 +107,10 @@ def add_event(m):
             return
         cont = channels.find_one({'name':user['c_container']})
         channels.update_one({'name':cont['name']},{'$set':{'current_messages':createmessage()}})
+        bot.send_message(m.chat.id, 'Успешно создано событие! Теперь настройте его:\n'+
+                         '/set_e_text - текст сообщения с розыгрышем;\n'+
+                         '/set_e_button - текст кнопки с розыгрышем;\n'+
+                         '/set_e_max_users - максимальное число участников розыгрыша.\n')
         
 
 
