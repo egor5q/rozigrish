@@ -207,7 +207,7 @@ def nameevent(m):
         if user['c_event'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
-        x = m.text.split(' ')
+        x = m.text.split('/set_e_name ')
         if len(x)>1:
             alls=[]
             name = x[1]
@@ -231,7 +231,7 @@ def nameevent(m):
         if user['c_event'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
-        x = m.text.split(' ')
+        x = m.text.split('/set_e_text ')
         if len(x)>1:
             text = x[1]
             event = channels.find_one({'name':user['c_container']})['current_messages'][user['c_event']]['name']
@@ -247,7 +247,7 @@ def nameevent(m):
         if user['c_event'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
-        x = m.text.split(' ')
+        x = m.text.split('/set_e_button ')
         if len(x)>1:
             text = x[1]
             event = channels.find_one({'name':user['c_container']})['current_messages'][user['c_event']]['name']
@@ -340,7 +340,7 @@ def set_namee(m):
         if user['c_container'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
             return
-        x = m.text.split(' ')
+        x = m.text.split('/set_name ')
         if len(x)>1:
             nextt = False
             name = x[1]
