@@ -52,7 +52,8 @@ def createuser(user):
             'name':user.first_name,
             'username':user.username,
             'c_container':None,
-            'c_channel':None
+            'c_channel':None,
+            'c_event':None
         })
         x = users.find_one({'id':user.id})
     return x
@@ -65,7 +66,34 @@ def create_tg_channel(channel):
         'username':channel.username
     }
         
+  
+
+def randomid():
+    alls = []
+    symbols = ['1', '2', '3', '4', '5', '6', '7']
+    for ids in channels.find({}):
+        for idss in ids['current_messages']:
+            alls.append(ids['current_messages']['id'])
+            
+    text=''
+    while len(text)<5:
+        text+=random.choice(symbols)
+    while text in alls:
+        text=''
+        while len(text)<5:
+            text+=random.choice(symbols)
+    return text
     
+
+def createmessage():
+    return {
+        'kb':None,
+        'msg_text':None,
+        'button_text':None,
+        'msg_id':None,
+        'id':randomid()
+    }
+
   
 
 @bot.message_handler(commands=['add_event'])
