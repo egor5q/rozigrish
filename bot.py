@@ -72,16 +72,18 @@ def create_tg_channel(channel):
 def cinfo(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
-        fchat = None
-        if user['first'] != None:
-            fchat = user['first']['title']
-        schat = None
-        if user['second'] != None:
-            schat = user['second']['title']
-        text=''
-        text += 'Текущий контейнер: `'+user['c_container']+'`;\n'
-        text += 'Первый чат (в котором будет кнопка): '+fchat+';\n'
-        text += 'Второй чат (на который надо подписаться): '+schat+'.\n'
+        cont = channels.find_one({'name':user['c_container']})
+        if cont != None:
+            fchat = None
+            if cont['first'] != None:
+                fchat = cont['first']['title']
+            schat = None
+            if cont['second'] != None:
+                schat = cont['second']['title']
+            text=''
+            text += 'Текущий контейнер: `'+user['c_container']+'`;\n'
+            text += 'Первый чат (в котором будет кнопка): '+str(fchat)+';\n'
+            text += 'Второй чат (на который надо подписаться): '+str(schat)+'.\n'
     
 
 @bot.message_handler(commands=['add'])
