@@ -128,6 +128,9 @@ def select_containerr(m):
 def select_event(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
         x = m.text.split(' ')
         if len(x)>1:
             name = x[1]
