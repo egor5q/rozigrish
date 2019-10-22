@@ -75,7 +75,8 @@ def randomid():
     symbols = ['1', '2', '3', '4', '5', '6', '7']
     for ids in channels.find({}):
         for idss in ids['current_messages']:
-            alls.append(ids['current_messages']['id'])
+            for idsss in ids['current_messages'][idss]:
+                alls.append(ids['current_messages'][idss][idsss]['id'])
             
     text=''
     while len(text)<5:
