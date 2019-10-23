@@ -110,10 +110,6 @@ def del_eventt(m):
     user = createuser(m.from_user)
     if m.from_user.id in admins:
         
-        if user['c_event'] == None:
-            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
-            return
-        
         if user['c_container'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
             return
