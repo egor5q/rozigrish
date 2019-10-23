@@ -394,6 +394,33 @@ def setsecond(m):
         bot.send_message(m.chat.id, 'Теперь пришлите мне форвард со второго канала (на который нужно подписаться для участия), к которому хотите привязать меня.')
         
         
+@bot.message_handler(commands=['end_event'])
+def endev(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        cont = channels.find_one({'name':call.data.split(' ')[1]})
+        event = cont['current_messages'][eid]
+        get = None
+        u = None
+        while u==None and len(event['clicked_users']) > 0: 
+            u = random.choice(event['clicked_users'])
+            get = bot.get_chat_member(cont['second']['id'], u)
+            if get.status == 'left':
+                event['clicked_users'].remove(u)
+                u = None
+        if u == None:
+            bot.send_message(m.chat.id, 'Недостаточно участников (скорее всего, все кликнувшие отписались от второго канала)!')
+            return
+        name = '[' + get.user.first_name + '](tg://user?id=' + str(get.user.id) + ')'
+        bot.send_message(cont['first'], 'Победитель розыгрыша - '+name.replace('_', '\_').replace('*', '\*').replace('`', '\`')+'!',
+                         parse_mode="markdown")
+        bot.delete_message(cont['first']['id'], event['msg_id'])
+        
+        
+        
 
 @bot.message_handler(commands=['tests'])
 def tstst(m):
@@ -432,12 +459,15 @@ def inline(call):
             if cont['second'] != None:
                 x = bot.get_chat_member(cont['second']['id'], call.from_user.id)
                 if x.status != 'left':
+                    if event['max_users'] != None:
+                        if len(event['clicked_users']) >= event['max_users']:
+                            bot.answer_callback_query(call.id, 'На розыгрыш уже записано максимальное число участников!')
+                            return
                     channels.update_one({'name':cont['name']},{'$push':{'current_messages.'+eid+'.clicked_users':call.from_user.id}})
                     bot.answer_callback_query(call.id, 'Вы успешно записались на розыгрыш!')
                     kb = types.InlineKeyboardMarkup()
                     kb.add(types.InlineKeyboardButton(text = str(event['button_text'])+' ('+str(len(event['clicked_users'])+1)+' записано).', callback_data = 'click '+cont['name']+' '+event['id']))
-       
-                    medit(event['msg_text'], call.message.chat.id, call.message.message_id, reply_markup=kb) 
+                    medit(event['msg_text'], call.message.chat.id, call.message.message_id, reply_markup=kb)
                 else:
                     bot.answer_callback_query(call.id, 'Не выполнено условие (подписка на канал)!')
             else:
