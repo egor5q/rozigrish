@@ -10,7 +10,7 @@ from telebot import types
 from pymongo import MongoClient
 import traceback
 
-token = ''
+token = '959606434:AAG_zxhM8M8pYJ056j6F7BNhUN1UVL9nbU0'
 bot = telebot.TeleBot(token)
 
 
