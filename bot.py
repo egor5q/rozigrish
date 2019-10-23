@@ -10,11 +10,11 @@ from telebot import types
 from pymongo import MongoClient
 import traceback
 
-token = os.environ['TELEGRAM_TOKEN']
+token = ''
 bot = telebot.TeleBot(token)
 
 
-client=MongoClient(os.environ['database'])
+client=MongoClient('mongodb+srv://botuser:3389@cluster0-bhrom.mongodb.net/test?retryWrites=true&w=majority')
 db=client.base1
 users=db.users
 channels = db.channels
