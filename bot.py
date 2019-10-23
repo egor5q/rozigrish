@@ -104,6 +104,24 @@ def createmessage():
 
   
 
+    
+@bot.message_handler(commands=['del_container'])
+def del_eventt(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        
+        channels.remove({'name':user['c_container']})
+        bot.send_message(m.chat.id, 'Контейнер удалён!')
+        users.update_one({'id':m.from_user.id},{'$set':{'c_container':None, 'c_event':None}})
+    
 @bot.message_handler(commands=['post_event'])
 def post_event(m):
     user = createuser(m.from_user)
