@@ -99,7 +99,10 @@ def createmessage():
         'msg_id':None,
         'max_users':None,
         'name':id,
-        'clicked_users':[]
+        'clicked_users':[],
+        'hours':None,
+        'minutes':None,
+        'start_at':None
     }}
 
   
@@ -139,7 +142,7 @@ def post_event(m):
         kb = types.InlineKeyboardMarkup()
         kb.add(types.InlineKeyboardButton(text = str(event['button_text']), callback_data = 'click '+cont['name']+' '+event['id']))
         msg = bot.send_message(cont['first']['id'], str(event['msg_text']), reply_markup = kb)
-        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+event['id']+'.msg_id':msg.message_id}})
+        channels.update_one({'name':cont['name']},{'$set':{'current_messages.'+event['id']+'.msg_id':msg.message_id, 'start_at': time.time()}})
         bot.send_message(m.chat.id, 'Успешно запущено событие!')
         
     
@@ -236,6 +239,75 @@ def nameevent(m):
         else:
             bot.send_message(m.chat.id, 'Для изменения имени события используйте формат:\n/set_e_name имя\nГде имя - имя события.')
             
+            
+@bot.message_handler(commands=['set_e_hours'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            alls=[]
+            try:
+                hour = int(x[1])
+            except:
+                bot.send_message(m.chat.id, 'Для изменения длительности события используйте формат:\n/set_e_hours часы\nГде часы - количество часов, '+
+                            'которое пройдёт с начала розыгрыша до его автоматического окончания.')
+                return
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.hours':hour}})
+            bot.send_message(m.chat.id, 'Вы успешно сменили длительность события!')
+
+        else:
+            bot.send_message(m.chat.id, 'Для изменения длительности события используйте формат:\n/set_e_hours часы\nГде часы - количество часов, '+
+                            'которое пройдёт с начала розыгрыша до его автоматического окончания.')
+            
+            
+@bot.message_handler(commands=['set_e_minutes'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            alls=[]
+            try:
+                minn = int(x[1])
+            except:
+                bot.send_message(m.chat.id, 'Для изменения длительности события используйте формат:\n/set_e_minutes минуты\nГде минуты - количество минут, '+
+                            'которое пройдёт с начала розыгрыша до его автоматического окончания.')
+                return
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.minutes':minn}})
+            bot.send_message(m.chat.id, 'Вы успешно сменили длительность события!')
+
+        else:
+            bot.send_message(m.chat.id, 'Для изменения длительности события используйте формат:\n/set_e_minutes минуты\nГде минуты - количество минут, '+
+                            'которое пройдёт с начала розыгрыша до его автоматического окончания.')
+            
+            
+            
+            
+@bot.message_handler(commands=['set_e_hours'])  
+def nameevent(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        x = m.text.split(' ')
+        if len(x)>1:
+            alls=[]
+            hour = int(x[1])
+            channels.update_one({'name':user['c_container']},{'$set':{'current_messages.'+user['c_event']+'.hours':hour}})
+            bot.send_message(m.chat.id, 'Вы успешно сменили длительность события!')
+
+        else:
+            bot.send_message(m.chat.id, 'Для изменения имени события используйте формат:\n/set_e_name имя\nГде имя - имя события.')
+            
+                 
             
             
 @bot.message_handler(commands=['set_e_text'])  
@@ -410,13 +482,19 @@ def setsecond(m):
         
 @bot.message_handler(commands=['end_event'])
 def endev(m):
-    user = createuser(m.from_user)
     if m.from_user.id in admins:
+        user = users.find_one({'id':864442319})
+        cont = channels.find_one({'name':user['c_container']})
+        event = cont['current_messages'][user['c_event']]
+        endevent(event)
+        
+        
+def endevent(event):
+        user = users.find_one({'id':864442319})
         if user['c_event'] == None:
             bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
             return
-        cont = channels.find_one({'name':call.data.split(' ')[1]})
-        event = cont['current_messages'][eid]
+        cont = channels.find_one({'name':user['c_container']})
         get = None
         u = None
         while u==None and len(event['clicked_users']) > 0: 
@@ -434,13 +512,8 @@ def endev(m):
         bot.delete_message(cont['first']['id'], event['msg_id'])
         
         
-        
 
-@bot.message_handler(commands=['tests'])
-def tstst(m):
-    kb=types.InlineKeyboardMarkup()
-    kb.add(types.InlineKeyboardButton(text='a', callback_data='test'))   
-    bot.send_message(-1001395267877, 'beee!', reply_markup=kb)
+        
     
     
     
@@ -494,6 +567,20 @@ def inline(call):
                 
         
 
+def check(m):
+    threading.Timer(60, check).start()
+    for ids in channels.find({}):
+        for idss in ids['current_messages']:
+            ev = ids['current_messages'][idss]
+            inctime = 0
+            if ev['hours'] != None:
+                inctime += ev['hours'] * 3600
+            if ev['minutes'] != None:
+                inctime += ev['minutes'] * 60
+            if inctime != 0:
+                if time.time() - (ev['start_at']+inctime) >= 0:
+                    endevent(event = ev)
+        
 
 
 def medit(message_text,chat_id, message_id,reply_markup=None,parse_mode=None):
