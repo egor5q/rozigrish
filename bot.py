@@ -146,6 +146,31 @@ def post_event(m):
         bot.send_message(m.chat.id, 'Успешно запущено событие!')
         
     
+
+
+@bot.message_handler(commands=['show_all'])
+def post_event(m):
+    user = createuser(m.from_user)
+    if m.from_user.id in admins:
+        
+        if user['c_event'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте событие (/add_event), или выберите существующее (/select_event)!')
+            return
+        
+        if user['c_container'] == None:
+            bot.send_message(m.chat.id, 'Сначала создайте контейнер (/add)!')
+            return
+        
+        cont = channels.find_one({'name':user['c_container']})
+        event = cont['current_messages'][user['c_event']]
+        i = 0
+        texts = []
+        txt = ''
+        for ids in event['clicked_users']:
+            txt +='[' + str(i) + '](tg://user?id=' + str(ids) + '), '
+        bot.send_message(m.chat.id, txt)
+        
+
     
 @bot.message_handler(commands=['select_container'])
 def select_containerr(m):
