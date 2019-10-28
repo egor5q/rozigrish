@@ -168,7 +168,8 @@ def post_event(m):
         txt = ''
         for ids in event['clicked_users']:
             txt +='[' + str(i) + '](tg://user?id=' + str(ids) + '), '
-        bot.send_message(m.chat.id, txt)
+            i += 1
+        bot.send_message(m.chat.id, txt, parse_mode='markdown')
         
 
     
